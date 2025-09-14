@@ -2,6 +2,16 @@ import jwt from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from 'express';
 import { User } from '../modules/users/entities/user.entity';
 
+interface TokenPayload {
+  id: number;
+  email?: string;
+  role?: string;
+  firstName?: string;
+  lastName?: string;
+  iat?: number;
+  exp?: number;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key';
 
@@ -27,23 +37,23 @@ export const generateRefreshToken = (user: User): string => {
   );
 };
 
-export const verifyToken = (token: string): any => {
+export const verifyToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, JWT_SECRET) as TokenPayload;
   } catch (error) {
     throw new Error('Invalid token');
   }
 };
 
-export const verifyRefreshToken = (token: string): any => {
+export const verifyRefreshToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, JWT_REFRESH_SECRET);
+    return jwt.verify(token, JWT_REFRESH_SECRET) as TokenPayload;
   } catch (error) {
     throw new Error('Invalid refresh token');
   }
 };
 
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = (req: Request, res: Response, next: NextFunction): Response | void => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 

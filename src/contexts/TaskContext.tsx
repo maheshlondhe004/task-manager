@@ -1,39 +1,37 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useState, useCallback, useContext } from 'react';
 import type { ReactNode } from 'react';
+import { useToast } from '@chakra-ui/react';
+import api from '../services/api';
+import type { Task, TaskContextType } from './TaskContext.types';
 
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED';
-  isCompleted: boolean;
-}
-
-interface TaskContextType {
-  tasks: Task[];
-  createTask: (title: string, description: string) => Promise<void>;
-  updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
-  deleteTask: (id: string) => Promise<void>;
-  fetchTasks: () => Promise<void>;
-}
-
-const TaskContext = createContext<TaskContextType | undefined>(undefined);
+export const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const toast = useToast();
 
-  const fetchTasks = useCallback(async () => {
+  const fetchTasks = useCallback(async (): Promise<void> => {
+    setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/tasks', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      const { data } = await api.get<Task[]>('/tasks');
+      setTasks(data);
+      setError(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch tasks';
+      setError(new Error(errorMessage));
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        status: 'error',
+        duration: 3000,
+        isClosable: true
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch tasks');
-      }
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
       const data = await response.json();
       setTasks(data);

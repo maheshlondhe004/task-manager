@@ -79,7 +79,14 @@ const HealthDashboard = () => {
     fetchData();
   }, [dateRange, filterLevel]);
 
-  const StatCard = ({ label, value, helpText, color }: any) => (
+  interface StatCardProps {
+    label: string;
+    value: string | number;
+    helpText: string;
+    color?: string;
+  }
+
+  const StatCard = ({ label, value, helpText, color }: StatCardProps) => (
     <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={bgColor}>
       <Stat>
         <StatLabel>{label}</StatLabel>

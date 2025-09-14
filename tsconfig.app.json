@@ -10,6 +10,8 @@
     "paths": {
       "@/*": ["src/*"]
     },
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node", "react", "react-dom", "jest"],
 
     /* Bundler mode */
     "moduleResolution": "node",

@@ -1,49 +1,21 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import type { ReactNode } from 'react';
-
-const apiBaseUrl = '/api';
-
-interface User {
-  id: string;
-  email: string;
-  role: 'ADMIN' | 'USER';
-  firstName: string;
-  lastName: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName: string, lastName: string, role: 'ADMIN' | 'USER') => Promise<void>;
-  logout: () => void;
-  refreshToken: () => Promise<void>;
-  isAdmin: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import type { User } from './AuthContext.types';
+import { AuthContext } from './AuthContext.context';
 
 const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const isAdmin = user?.role === 'ADMIN';
 
-  const refreshToken = async () => {
+    const refreshToken = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No refresh token found');
-      }
-
       const response = await fetch(`${apiBaseUrl}/users/refresh-token`, {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!response.ok) {
@@ -51,15 +23,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const data = await response.json();
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
-      setIsAuthenticated(true);
+      if (data.user) {
+        setUser(data.user);
+        setIsAuthenticated(true);
+      }
     } catch (error) {
-      console.error('Token refresh error:', error);
+      console.error('Failed to refresh token:', error);
       logout();
-      throw error;
     }
-  };
+  }, [apiBaseUrl, setUser, setIsAuthenticated]);
 
   const login = async (email: string, password: string) => {
     try {

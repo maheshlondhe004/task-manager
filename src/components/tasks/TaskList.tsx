@@ -41,7 +41,7 @@ const TaskList = () => {
     };
     
     loadTasks();
-  }, [fetchTasks]);
+  }, [fetchTasks, toast]);
 
   const handleLogout = () => {
     logout();

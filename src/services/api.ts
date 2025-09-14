@@ -39,7 +39,7 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.token}`;
           return api(originalRequest);
         }
-      } catch (refreshError) {
+      } catch (_) {
         // Refresh failed, clear token and redirect to login
         localStorage.removeItem('token');
         window.location.href = '/login';

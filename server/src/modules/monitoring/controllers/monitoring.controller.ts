@@ -4,7 +4,7 @@ import { AppError } from '../../../shared/middleware/errorHandler';
 
 const monitoringService = new MonitoringService();
 
-export const getSystemHealth = async (req: Request, res: Response, next: NextFunction) => {
+export const getSystemHealth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return next(new AppError(403, 'Access forbidden. Admin only.'));
@@ -25,7 +25,7 @@ export const getSystemHealth = async (req: Request, res: Response, next: NextFun
   }
 };
 
-export const getLogs = async (req: Request, res: Response, next: NextFunction) => {
+export const getLogs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return next(new AppError(403, 'Access forbidden. Admin only.'));
