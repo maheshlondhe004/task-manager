@@ -23,12 +23,13 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
+        cache: 'npm'
 
     - name: Install Backend Dependencies
       run: |
@@ -56,16 +57,18 @@ jobs:
       run: npm run build
 
     - name: Upload Frontend Coverage
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-coverage
         path: coverage/
+        retention-days: 5
 
     - name: Upload Backend Coverage
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: backend-coverage
         path: server/coverage/
+        retention-days: 5
 
     - name: Build Backend
       run: |
