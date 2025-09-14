@@ -8,8 +8,15 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "test": "jest",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "ci": "npm run typecheck && npm run lint && npm run test:coverage && npm run build"
   },
   "keywords": [],
   "author": "",

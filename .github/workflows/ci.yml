@@ -1,4 +1,4 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
@@ -35,19 +35,37 @@ jobs:
         cd server
         npm install
 
-    - name: Run Backend Tests
+    - name: Run Backend CI Checks
       run: |
         cd server
-        npm test
+        npm run ci
 
     - name: Install Frontend Dependencies
       run: npm install
 
+    - name: Run Frontend Type Check
+      run: npm run typecheck
+
+    - name: Run Frontend Lint
+      run: npm run lint
+
     - name: Run Frontend Tests
-      run: npm test
+      run: npm run test
 
     - name: Build Frontend
       run: npm run build
+
+    - name: Upload Frontend Coverage
+      uses: actions/upload-artifact@v2
+      with:
+        name: frontend-coverage
+        path: coverage/
+
+    - name: Upload Backend Coverage
+      uses: actions/upload-artifact@v2
+      with:
+        name: backend-coverage
+        path: server/coverage/
 
     - name: Build Backend
       run: |
