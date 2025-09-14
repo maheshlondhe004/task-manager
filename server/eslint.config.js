@@ -1,19 +1,24 @@
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+const { FlatCompat } = require('@eslint/eslintrc');
+const js = require('@eslint/js');
+const typescript = require('@typescript-eslint/parser');
+const eslintPluginTypescript = require('@typescript-eslint/eslint-plugin');
 
-export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  {
-    files: ['src/**/*.ts'],
-    languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        project: './tsconfig.json',
-      },
+const compat = new FlatCompat();
+
+module.exports = [
+  js.configs.recommended,
+  ...compat.config({
+    extends: ['plugin:@typescript-eslint/recommended'],
+    parser: '@typescript-eslint/parser',
+    plugins: ['@typescript-eslint'],
+    parserOptions: {
+      project: './tsconfig.json',
+      tsconfigRootDir: __dirname,
     },
     rules: {
-      // Add any custom rules here
-    },
-  }
-);
+      '@typescript-eslint/explicit-module-boundary-types': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+    }
+  })
+];
