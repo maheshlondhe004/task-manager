@@ -14,7 +14,7 @@ export class AppError extends Error {
   }
 }
 
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+export const auth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
@@ -47,8 +47,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export const authorize = (...roles: ('ADMIN' | 'USER')[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+export const authorize = (...roles: ('ADMIN' | 'USER')[]): ((req: Request, res: Response, next: NextFunction) => void) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
       return next(new AppError(401, 'Authentication required'));
     }

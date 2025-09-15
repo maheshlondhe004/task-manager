@@ -65,14 +65,17 @@ export const verifyRefreshToken = (token: string): unknown => {
 };
 
 // Type guard to narrow unknown -> UserPayload
-function isUserPayload(p: any): p is UserPayload {
-    return (
-        p !== null &&
-        typeof p === 'object' &&
-        typeof p.id === 'string' &&
-        typeof p.email === 'string' &&
-        (p.role === 'ADMIN' || p.role === 'USER')
-    );
+function isUserPayload(p: unknown): p is UserPayload {
+    if (p !== null && typeof p === 'object') {
+        const obj = p as Record<string, unknown>;
+        const role = obj.role as unknown;
+        return (
+            typeof obj.id === 'string' &&
+            typeof obj.email === 'string' &&
+            (role === 'ADMIN' || role === 'USER')
+        );
+    }
+    return false;
 }
 
 // Shape of the decoded refresh token payload
@@ -83,12 +86,12 @@ export type RefreshPayload = {
 };
 
 // Type guard for refresh token payload
-export function isRefreshPayload(p: any): p is RefreshPayload {
-    return (
-        p !== null &&
-        typeof p === 'object' &&
-        typeof p.id === 'string'
-    );
+export function isRefreshPayload(p: unknown): p is RefreshPayload {
+    if (p !== null && typeof p === 'object') {
+        const obj = p as Record<string, unknown>;
+        return typeof obj.id === 'string';
+    }
+    return false;
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): Response | void => {

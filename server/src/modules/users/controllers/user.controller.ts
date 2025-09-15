@@ -4,7 +4,7 @@ import { getManager } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { generateToken, generateRefreshToken, verifyRefreshToken, isRefreshPayload } from '../../../config/auth';
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
     const userRepository = getManager().getRepository(User);
@@ -51,7 +51,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, firstName, lastName, role } = req.body;
     const userRepository = getManager().getRepository(User);
@@ -108,7 +108,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const refreshToken = async (req: Request, res: Response) => {
+export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
     const refreshToken = req.cookies.refreshToken;
     
@@ -160,7 +160,7 @@ export const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     const refreshToken = req.cookies.refreshToken;
     

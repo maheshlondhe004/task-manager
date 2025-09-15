@@ -49,7 +49,7 @@ export const getLogs = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
-export const getStats = async (req: Request, res: Response, next: NextFunction) => {
+export const getStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return next(new AppError(403, 'Access forbidden. Admin only.'));

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../entities/user.entity';
 import { AppError } from '../../../shared/middleware/errorHandler';
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, password, firstName, lastName, role } = req.body;
     console.log('Registration request received:', { email, firstName, lastName, role }); // Debug log
@@ -91,7 +91,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email); // Debug log
@@ -151,7 +151,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
+export const getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
       return next(new AppError(401, 'Authentication required'));
@@ -173,7 +173,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'ADMIN') {
       return next(new AppError(403, 'Access forbidden. Admin only.'));

@@ -15,7 +15,7 @@ export const logger = winston.createLogger({
   ]
 });
 
-export const setupLogger = () => {
+export const setupLogger = (): winston.Logger => {
   // Add any additional logger setup if needed
   return logger;
 };

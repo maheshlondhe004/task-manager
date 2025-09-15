@@ -3,7 +3,7 @@ import { getRepository } from 'typeorm';
 import { Task } from '../entities/task.entity';
 import { AppError } from '../../../shared/middleware/errorHandler';
 
-export const getTasks = async (req: Request, res: Response, next: NextFunction) => {
+export const getTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const taskRepository = getRepository(Task);
     const tasks = await taskRepository.find({
@@ -17,7 +17,7 @@ export const getTasks = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const createTask = async (req: Request, res: Response, next: NextFunction) => {
+export const createTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { title, description } = req.body;
     const taskRepository = getRepository(Task);
@@ -35,7 +35,7 @@ export const createTask = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const updateTask = async (req: Request, res: Response, next: NextFunction) => {
+export const updateTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -58,7 +58,7 @@ export const updateTask = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const deleteTask = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
     const taskRepository = getRepository(Task);
