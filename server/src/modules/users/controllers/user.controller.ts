@@ -11,12 +11,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     
     const user = await userRepository.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'Invalid credentials' });
+      return;
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: 'Invalid credentials' });
+      return;
     }
 
     const token = generateToken(user);
@@ -59,7 +61,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Check if user already exists
     const existingUser = await userRepository.findOne({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      res.status(400).json({ message: 'User already exists' });
+      return;
     }
 
     // Hash password
@@ -113,20 +116,23 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
     const refreshToken = req.cookies.refreshToken;
     
     if (!refreshToken) {
-      return res.status(401).json({ message: 'Refresh token is required' });
+      res.status(401).json({ message: 'Refresh token is required' });
+      return;
     }
 
     const userRepository = getManager().getRepository(User);
     const decoded = verifyRefreshToken(refreshToken);
     
     if (!isRefreshPayload(decoded)) {
-      return res.status(403).json({ message: 'Invalid refresh token payload' });
+      res.status(403).json({ message: 'Invalid refresh token payload' });
+      return;
     }
 
     const user = await userRepository.findOne({ where: { id: decoded.id, refreshToken } });
     
     if (!user) {
-      return res.status(403).json({ message: 'Invalid refresh token' });
+      res.status(403).json({ message: 'Invalid refresh token' });
+      return;
     }
 
     const newToken = generateToken(user);
