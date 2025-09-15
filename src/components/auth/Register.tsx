@@ -12,7 +12,7 @@ import {
   Link,
   Select,
 } from '@chakra-ui/react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/useAuth';
 
 const Register = () => {
   const [formData, setFormData] = useState({

@@ -11,7 +11,7 @@ import {
   useToast,
   Link,
 } from '@chakra-ui/react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/useAuth';
 
 const Login = () => {
   const [email, setEmail] = useState('');

@@ -27,14 +27,18 @@ export interface UserState {
   };
 }
 
-export interface UserContextValue extends Omit<UserState, 'error'> {
+export type UserContextValue = {
+  users: User[];
+  selectedUser: User | null;
+  isLoading: boolean;
+  pagination: UserState['pagination'];
   fetchUsers: (filters?: UserFilters) => Promise<PaginatedResponse<User>>;
   updateUser: (id: string, updates: UpdateUserDTO) => Promise<ApiResponse<User>>;
   deleteUser: (id: string) => Promise<void>;
   selectUser: (user: User | null) => void;
   assignRole: (userId: string, role: UserRole) => Promise<ApiResponse<User>>;
   clearError: () => void;
-}
+};
 
 export interface UserProviderProps {
   children: ReactNode;

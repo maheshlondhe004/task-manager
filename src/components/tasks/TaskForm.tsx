@@ -14,7 +14,7 @@ import {
   Textarea,
   useToast,
 } from '@chakra-ui/react';
-import { useTask } from '../../contexts/TaskContext';
+import { useTask } from '../../contexts/useTask';
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -30,7 +30,7 @@ const TaskForm = ({ isOpen, onClose }: TaskFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createTask(title, description);
+      await createTask({ title, description, dueDate: new Date().toISOString(), priority: 'MEDIUM' });
       toast({
         title: 'Success',
         description: 'Task created successfully',

@@ -1,6 +1,6 @@
 import { Box, VStack, Button, Text, useColorModeValue } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/useAuth';
 import type { ReactElement } from 'react';
 
 interface NavItemProps {

@@ -9,7 +9,7 @@ interface User {
   role: 'ADMIN' | 'USER';
 }
 
-interface UserContextType {
+export interface UserContextType {
   users: User[];
   fetchUsers: () => Promise<void>;
   createUser: (userData: Omit<User, 'id'>) => Promise<void>;

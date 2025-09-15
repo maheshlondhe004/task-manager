@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { User } from './AuthContext.types';
+import type { User, AuthContextValue } from './AuthContext.types';
 import { AuthContext } from './AuthContext.context';
 
 const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const apiBaseUrl = process.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -148,18 +148,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
   }, []);
 
+  const value: AuthContextValue = {
+    user,
+    isAuthenticated,
+    isAdmin,
+    login,
+    register,
+    logout,
+    refreshToken,
+  };
+
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        login, 
-        register, 
-        logout,
-        refreshToken,
-        isAuthenticated,
-        isAdmin 
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

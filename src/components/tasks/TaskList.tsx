@@ -11,8 +11,8 @@ import {
   useToast,
   Box,
 } from '@chakra-ui/react';
-import { useTask } from '@/contexts/TaskContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useTask } from '@/contexts/useTask';
+import { useAuth } from '@/contexts/useAuth';
 import TaskForm from './TaskForm';
 import TaskItem from './TaskItem';
 

@@ -8,14 +8,9 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
-import { useTask } from '../../contexts/TaskContext';
+import { useTask } from '../../contexts/useTask';
 
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  isCompleted: boolean;
-}
+import type { Task } from '../../contexts/TaskContext.types';
 
 interface TaskItemProps {
   task: Task;
@@ -28,7 +23,7 @@ const TaskItem = ({ task, isAdmin }: TaskItemProps) => {
 
   const handleToggleComplete = async () => {
     try {
-      await updateTask(task.id, { isCompleted: !task.isCompleted });
+      await updateTask(task.id, { status: task.status === 'DONE' ? 'TODO' : 'DONE' });
     } catch (error) {
       toast({
         title: 'Error',
@@ -67,13 +62,13 @@ const TaskItem = ({ task, isAdmin }: TaskItemProps) => {
         <HStack justify="space-between">
           <HStack>
             <Checkbox
-              isChecked={task.isCompleted}
+              isChecked={task.status === 'DONE'}
               onChange={handleToggleComplete}
             />
             <Box>
               <Text
                 fontSize="lg"
-                textDecoration={task.isCompleted ? 'line-through' : 'none'}
+                textDecoration={task.status === 'DONE' ? 'line-through' : 'none'}
               >
                 {task.title}
               </Text>
