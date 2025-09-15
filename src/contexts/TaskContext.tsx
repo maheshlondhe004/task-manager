@@ -1,26 +1,54 @@
-import { createContext, useState, useCallback, useContext } from 'react';
+import { useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useToast } from '@chakra-ui/react';
 import api from '../services/api';
-import type { Task, TaskContextType } from './TaskContext.types';
+import type {
+  Task,
+  TaskContextValue,
+  TaskState,
+  CreateTaskDTO,
+  UpdateTaskDTO,
+  TaskFilters,
+} from './TaskContext.types';
+import type { PaginatedResponse, ApiResponse } from '../types/api.types';
+import { TaskContext } from './TaskContext.context';
 
-export const TaskContext = createContext<TaskContextType | undefined>(undefined);
-
+// Task context provider component
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [state, setState] = useState<TaskState>({
+    tasks: [],
+    selectedTask: null,
+    isLoading: false,
+    error: null,
+    pagination: {
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 0
+    }
+  });
+
   const toast = useToast();
 
-  const fetchTasks = useCallback(async (): Promise<void> => {
-    setLoading(true);
+  const fetchTasks = useCallback(async (filters?: TaskFilters): Promise<PaginatedResponse<Task>> => {
+    setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const { data } = await api.get<Task[]>('/tasks');
-      setTasks(data);
-      setError(null);
+      const { data } = await api.get<PaginatedResponse<Task>>('/tasks', { params: filters });
+      setState(prev => ({
+        ...prev,
+        tasks: data.data,
+        pagination: {
+          total: data.total,
+          page: data.page,
+          limit: data.limit,
+          totalPages: data.totalPages
+        },
+        error: null
+      }));
+      return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch tasks';
-      setError(new Error(errorMessage));
+      setState(prev => ({ ...prev, error: errorMessage }));
       toast({
         title: 'Error',
         description: errorMessage,
@@ -28,99 +56,168 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         duration: 3000,
         isClosable: true
       });
+      throw err;
     } finally {
-      setLoading(false);
+      setState(prev => ({ ...prev, isLoading: false }));
     }
   }, [toast]);
 
-      const data = await response.json();
-      setTasks(data);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      throw error;
+  const createTask = useCallback(async (taskData: CreateTaskDTO): Promise<ApiResponse<Task>> => {
+    setState(prev => ({ ...prev, isLoading: true }));
+    try {
+      const { data } = await api.post<ApiResponse<Task>>('/tasks', taskData);
+      setState(prev => ({
+        ...prev,
+        tasks: [...prev.tasks, data.data],
+        error: null
+      }));
+      toast({
+        title: 'Success',
+        description: 'Task created successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
+      });
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create task';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        status: 'error',
+        duration: 3000,
+        isClosable: true
+      });
+      throw err;
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
     }
+  }, [toast]);
+
+  const updateTask = useCallback(async (id: string, updates: UpdateTaskDTO): Promise<ApiResponse<Task>> => {
+    setState(prev => ({ ...prev, isLoading: true }));
+    try {
+      const { data } = await api.patch<ApiResponse<Task>>(`/tasks/${id}`, updates);
+      setState(prev => ({
+        ...prev,
+        tasks: prev.tasks.map(task => task.id === id ? data.data : task),
+        error: null
+      }));
+      toast({
+        title: 'Success',
+        description: 'Task updated successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
+      });
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update task';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        status: 'error',
+        duration: 3000,
+        isClosable: true
+      });
+      throw err;
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
+    }
+  }, [toast]);
+
+  const deleteTask = useCallback(async (id: string): Promise<void> => {
+    setState(prev => ({ ...prev, isLoading: true }));
+    try {
+      await api.delete(`/tasks/${id}`);
+      setState(prev => ({
+        ...prev,
+        tasks: prev.tasks.filter(task => task.id !== id),
+        error: null
+      }));
+      toast({
+        title: 'Success',
+        description: 'Task deleted successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete task';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        status: 'error',
+        duration: 3000,
+        isClosable: true
+      });
+      throw err;
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
+    }
+  }, [toast]);
+
+  const selectTask = useCallback((task: Task | null) => {
+    setState(prev => ({ ...prev, selectedTask: task }));
   }, []);
 
-  const createTask = async (title: string, description: string) => {
+  const assignTask = useCallback(async (taskId: string, userId: string): Promise<ApiResponse<Task>> => {
+    setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ title, description }),
+      const { data } = await api.post<ApiResponse<Task>>(`/tasks/${taskId}/assign`, { userId });
+      setState(prev => ({
+        ...prev,
+        tasks: prev.tasks.map(task => task.id === taskId ? data.data : task),
+        error: null
+      }));
+      toast({
+        title: 'Success',
+        description: 'Task assigned successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to create task');
-      }
-
-      const newTask = await response.json();
-      setTasks([...tasks, newTask]);
-    } catch (error) {
-      console.error('Error creating task:', error);
-      throw error;
-    }
-  };
-
-  const updateTask = async (id: string, updates: Partial<Task>) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(updates),
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to assign task';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        status: 'error',
+        duration: 3000,
+        isClosable: true
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update task');
-      }
-
-      const updatedTask = await response.json();
-      setTasks(tasks.map(task => task.id === id ? updatedTask : task));
-    } catch (error) {
-      console.error('Error updating task:', error);
-      throw error;
+      throw err;
+    } finally {
+      setState(prev => ({ ...prev, isLoading: false }));
     }
-  };
+  }, [toast]);
 
-  const deleteTask = async (id: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/tasks/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+  const clearError = useCallback(() => {
+    setState(prev => ({ ...prev, error: null }));
+  }, []);
 
-      if (!response.ok) {
-        throw new Error('Failed to delete task');
-      }
-
-      setTasks(tasks.filter(task => task.id !== id));
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      throw error;
-    }
+  const value: TaskContextValue = {
+    tasks: state.tasks,
+    selectedTask: state.selectedTask,
+    isLoading: state.isLoading,
+    pagination: state.pagination,
+    fetchTasks,
+    createTask,
+    updateTask,
+    deleteTask,
+    selectTask,
+    assignTask,
+    clearError
   };
 
   return (
-    <TaskContext.Provider value={{ tasks, createTask, updateTask, deleteTask, fetchTasks }}>
+    <TaskContext.Provider value={value}>
       {children}
     </TaskContext.Provider>
   );
-};
-
-export const useTask = () => {
-  const context = useContext(TaskContext);
-  if (context === undefined) {
-    throw new Error('useTask must be used within a TaskProvider');
-  }
-  return context;
 };
