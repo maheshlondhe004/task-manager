@@ -4,7 +4,8 @@ import type { User, AuthContextValue } from './AuthContext.types';
 import { AuthContext } from './AuthContext.context';
 
 const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes
-const apiBaseUrl = process.env.VITE_API_URL || 'http://localhost:3000/api';
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const apiBaseUrl = RAW_API_URL.endsWith('/api') ? RAW_API_URL : `${RAW_API_URL}/api`;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);

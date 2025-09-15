@@ -101,6 +101,13 @@ A full-stack task management application with user authentication, role-based ac
    npm run dev
    ```
 
+### API Documentation (Swagger)
+
+Once the backend is running, open `http://localhost:3000/api-docs` to view the interactive Swagger UI.
+
+- JSON spec: `http://localhost:3000/api-docs.json`
+- Secured endpoints use Bearer JWT (`Authorization: Bearer <token>`)
+
 ## Project Structure
 
 ```

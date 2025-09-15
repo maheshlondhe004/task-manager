@@ -6,6 +6,8 @@ import { configureRoutes } from './routes';
 import { errorHandler } from './shared/middleware/errorHandler';
 import { setupLogger } from './shared/utils/logger';
 import { dbConfig } from './config/database';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +16,12 @@ const PORT = process.env.PORT || 3000;
 const logger = setupLogger();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(helmet());
 app.use(express.json());
 
@@ -25,6 +32,13 @@ app.get('/health', (_, res) => {
 
 // Configure routes
 configureRoutes(app);
+
+// Swagger docs (cast to any to avoid express type mismatch across workspaces)
+app.use('/api-docs', ...(swaggerUi.serve as unknown as any[]), swaggerUi.setup(swaggerSpec) as any);
+app.get('/api-docs.json', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // Error handling middleware
 app.use(errorHandler);

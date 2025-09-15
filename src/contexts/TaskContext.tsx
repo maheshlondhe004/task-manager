@@ -33,19 +33,20 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const fetchTasks = useCallback(async (filters?: TaskFilters): Promise<PaginatedResponse<Task>> => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const { data } = await api.get<PaginatedResponse<Task>>('/tasks', { params: filters });
+      const { data } = await api.get<PaginatedResponse<Task> | Task[]>('/tasks', { params: filters });
+      const items = Array.isArray(data) ? data : data.data;
+      const pagination = Array.isArray(data)
+        ? { total: items.length, page: 1, limit: items.length || 10, totalPages: 1 }
+        : { total: data.total, page: data.page, limit: data.limit, totalPages: data.totalPages };
       setState(prev => ({
         ...prev,
-        tasks: data.data,
-        pagination: {
-          total: data.total,
-          page: data.page,
-          limit: data.limit,
-          totalPages: data.totalPages
-        },
+        tasks: items || [],
+        pagination,
         error: null
       }));
-      return data;
+      return Array.isArray(data)
+        ? { data: items, ...pagination }
+        : data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch tasks';
       setState(prev => ({ ...prev, error: errorMessage }));
@@ -65,10 +66,11 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const createTask = useCallback(async (taskData: CreateTaskDTO): Promise<ApiResponse<Task>> => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const { data } = await api.post<ApiResponse<Task>>('/tasks', taskData);
+      const { data } = await api.post<ApiResponse<Task> | Task>('/tasks', taskData);
+      const entity = (data as any).data ?? (data as Task);
       setState(prev => ({
         ...prev,
-        tasks: [...prev.tasks, data.data],
+        tasks: [...prev.tasks, entity],
         error: null
       }));
       toast({
@@ -78,7 +80,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         duration: 3000,
         isClosable: true
       });
-      return data;
+      return (data as any).data ? (data as ApiResponse<Task>) : { data: entity } as ApiResponse<Task>;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create task';
       setState(prev => ({ ...prev, error: errorMessage }));
@@ -98,10 +100,11 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const updateTask = useCallback(async (id: string, updates: UpdateTaskDTO): Promise<ApiResponse<Task>> => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const { data } = await api.patch<ApiResponse<Task>>(`/tasks/${id}`, updates);
+      const { data } = await api.patch<ApiResponse<Task> | Task>(`/tasks/${id}`, updates);
+      const entity = (data as any).data ?? (data as Task);
       setState(prev => ({
         ...prev,
-        tasks: prev.tasks.map(task => task.id === id ? data.data : task),
+        tasks: prev.tasks.map(task => task.id === id ? entity : task),
         error: null
       }));
       toast({
@@ -111,7 +114,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         duration: 3000,
         isClosable: true
       });
-      return data;
+      return (data as any).data ? (data as ApiResponse<Task>) : { data: entity } as ApiResponse<Task>;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update task';
       setState(prev => ({ ...prev, error: errorMessage }));
@@ -167,10 +170,11 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const assignTask = useCallback(async (taskId: string, userId: string): Promise<ApiResponse<Task>> => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
-      const { data } = await api.post<ApiResponse<Task>>(`/tasks/${taskId}/assign`, { userId });
+      const { data } = await api.post<ApiResponse<Task> | Task>(`/tasks/${taskId}/assign`, { userId });
+      const entity = (data as any).data ?? (data as Task);
       setState(prev => ({
         ...prev,
-        tasks: prev.tasks.map(task => task.id === taskId ? data.data : task),
+        tasks: prev.tasks.map(task => task.id === taskId ? entity : task),
         error: null
       }));
       toast({
@@ -180,7 +184,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         duration: 3000,
         isClosable: true
       });
-      return data;
+      return (data as any).data ? (data as ApiResponse<Task>) : { data: entity } as ApiResponse<Task>;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to assign task';
       setState(prev => ({ ...prev, error: errorMessage }));
