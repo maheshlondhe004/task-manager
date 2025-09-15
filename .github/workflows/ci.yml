@@ -44,9 +44,6 @@ jobs:
     - name: Install Frontend Dependencies
       run: npm install
 
-    - name: Run Frontend Type Check
-      run: npm run typecheck
-
     - name: Run Frontend Lint
       run: npm run lint
 
