@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { getManager } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { generateToken, generateRefreshToken, verifyRefreshToken } from '../../../config/auth';
+import { generateToken, generateRefreshToken, verifyRefreshToken, isRefreshPayload } from '../../../config/auth';
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -119,6 +119,10 @@ export const refreshToken = async (req: Request, res: Response) => {
     const userRepository = getManager().getRepository(User);
     const decoded = verifyRefreshToken(refreshToken);
     
+    if (!isRefreshPayload(decoded)) {
+      return res.status(403).json({ message: 'Invalid refresh token payload' });
+    }
+
     const user = await userRepository.findOne({ where: { id: decoded.id, refreshToken } });
     
     if (!user) {
